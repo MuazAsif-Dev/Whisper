@@ -1,0 +1,9 @@
+{
+    debug
+}
+
+http://127.0.0.1 {
+    reverse_proxy chat-app-1:8000 chat-app-2:8001 chat-app-3:8002 {
+        header_down Strict-Transport-Security max-age=31536000
+    }
+}
