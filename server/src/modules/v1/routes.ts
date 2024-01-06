@@ -7,5 +7,5 @@ export default async function router(router: FastifyInstance) {
 		return { message: "Api v1 is running" };
 	});
 
-	router.register(userRouter, { prefix: "/user" });
+	router.register(userRouter, { prefix: "/users" });
 }

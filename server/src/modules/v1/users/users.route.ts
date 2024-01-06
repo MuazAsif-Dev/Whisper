@@ -3,6 +3,7 @@ import type { FastifyInstance } from "fastify";
 import {
 	createUserHandler,
 	getUserByIdHandler,
+	getUsersHandler,
 	loginHandler,
 } from "./users.controller";
 import {
@@ -13,9 +14,7 @@ import {
 } from "./users.schema";
 
 export default async function userRouter(router: FastifyInstance) {
-	router.get("/", () => {
-		return "User Routes";
-	});
+	router.get("/", getUsersHandler);
 
 	router.post("/create", { schema: createUserJsonSchema }, createUserHandler);
 

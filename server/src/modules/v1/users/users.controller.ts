@@ -7,7 +7,12 @@ import {
 	loginUserRequestBodyType,
 	registerUserRequestBodyType,
 } from "./users.schema";
-import { createUser, getUserById, getUserByUsername } from "./users.service";
+import {
+	createUser,
+	getUserById,
+	getUserByUsername,
+	getUsers,
+} from "./users.service";
 
 export async function createUserHandler(
 	req: FastifyRequest<{ Body: createUserRequestBodyType }>,
@@ -23,6 +28,12 @@ export async function createUserHandler(
 	}
 
 	return user;
+}
+
+export async function getUsersHandler() {
+	const users = await getUsers();
+
+	return users;
 }
 
 export async function getUserByIdHandler(

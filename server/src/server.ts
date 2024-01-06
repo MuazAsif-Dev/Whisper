@@ -52,6 +52,15 @@ export async function createServer() {
 
 	await app.register(jwt, { secret: env.JWT_SECRET_KEY });
 
+	app.register(router, { prefix: "/api/v1" });
+
+	app.get("/healthcheck", () => {
+		return {
+			status: "ok",
+			port: env.PORT,
+		};
+	});
+
 	const publisher = new Redis(env.UPSTASH_REDIS_URI);
 	const subscriber = new Redis(env.UPSTASH_REDIS_URI);
 
@@ -60,13 +69,6 @@ export async function createServer() {
 	if (!currCount) {
 		await publisher.set(CONNECTION_COUNT_KEY, 0);
 	}
-
-	app.get("/healthcheck", () => {
-		return {
-			status: "ok",
-			port: env.PORT,
-		};
-	});
 
 	app.io.use((socket: CustomSocket, next) => {
 		const username = socket.handshake.auth.username;
@@ -173,8 +175,6 @@ export async function createServer() {
 		}
 		return;
 	});
-
-	app.register(router, { prefix: "/api/v1" });
 
 	return app;
 }
