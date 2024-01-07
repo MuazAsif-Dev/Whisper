@@ -1,10 +1,5 @@
 import * as argon2 from "argon2";
-import {
-	InferInsertModel,
-	InferSelectModel,
-	eq,
-	getTableColumns,
-} from "drizzle-orm";
+import { InferInsertModel, eq, getTableColumns } from "drizzle-orm";
 
 import { db } from "@/db/dbConnection";
 import { users } from "@/db/models/users.model";
