@@ -10,7 +10,7 @@ export async function createRoom(data: InferInsertModel<typeof rooms>) {
 }
 
 export async function getRooms() {
-	const result = await db.select({ rooms }).from(rooms);
+	const result = await db.select().from(rooms);
 
 	return result;
 }

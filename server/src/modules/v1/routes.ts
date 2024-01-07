@@ -1,6 +1,8 @@
 import type { FastifyInstance } from "fastify";
 
 import userRouter from "./users/users.route";
+import roomRouter from "./rooms/rooms.route";
+import roomMemberRouter from "./roomMembers/roomMembers.route";
 
 export default async function router(router: FastifyInstance) {
 	router.get("/", async () => {
@@ -8,4 +10,6 @@ export default async function router(router: FastifyInstance) {
 	});
 
 	router.register(userRouter, { prefix: "/users" });
+	router.register(roomRouter, { prefix: "/rooms" });
+	router.register(roomMemberRouter, { prefix: "/room-members" });
 }

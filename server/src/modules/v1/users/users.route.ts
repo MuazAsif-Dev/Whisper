@@ -16,13 +16,9 @@ import {
 export default async function userRouter(router: FastifyInstance) {
 	router.get("/", getUsersHandler);
 
-	router.post("/create", { schema: createUserJsonSchema }, createUserHandler);
+	router.get("/:id", { schema: getUserByIdJsonSchema }, getUserByIdHandler);
 
-	router.post(
-		"/:userId",
-		{ schema: getUserByIdJsonSchema },
-		getUserByIdHandler,
-	);
+	router.post("/create", { schema: createUserJsonSchema }, createUserHandler);
 
 	router.post("/login", { schema: loginUserJsonSchema }, loginHandler);
 

@@ -53,7 +53,13 @@ export async function getUserByIdHandler(
 		};
 	}
 
-	return user;
+	const { password, ...rest } = user;
+
+	const safeUser = {
+		...rest,
+	};
+
+	return safeUser;
 }
 
 export async function loginHandler(
