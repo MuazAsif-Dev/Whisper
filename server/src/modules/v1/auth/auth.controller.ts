@@ -30,7 +30,7 @@ export async function loginHandler(
 		},
 		{
 			sign: {
-				expiresIn: "5m",
+				expiresIn: "50m",
 			},
 		},
 	);
@@ -75,7 +75,7 @@ export async function registerHandler(
 		},
 		{
 			sign: {
-				expiresIn: "5m",
+				expiresIn: "50m",
 			},
 		},
 	);

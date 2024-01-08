@@ -11,20 +11,48 @@ import { env } from "@/config/env";
 import { loggerConfig } from "@/config/logger";
 import router from "@/modules/v1/routes";
 import { randomUUID } from "crypto";
+import { getMessagesByRoomId } from "./modules/v1/messages/messages.service";
 
-interface IOEvents {
+type token = {
+	id: string;
+	username: string;
+};
+
+interface ServerToClientEvents {
 	"chat:connection-count-updated": (payload: any) => Promise<void>;
 	"chat:new-message": (payload: any) => Promise<void>;
+}
+// interface ServerToClientEvents {
+//   noArg: () => void;
+//   basicEmit: (a: number, b: string, c: Buffer) => void;
+//   withAck: (d: string, callback: (e: number) => void) => void;
+// }
+
+interface ClientToServerEvents {
+	hello: () => void;
+}
+
+interface InterServerEvents {
+	ping: () => void;
+}
+
+interface SocketData {
+	token: token;
 }
 
 declare module "fastify" {
 	interface FastifyInstance {
-		io: Server<IOEvents>;
+		io: Server<
+			ClientToServerEvents,
+			ServerToClientEvents,
+			InterServerEvents,
+			SocketData
+		>;
 	}
 }
 
 interface CustomSocket extends Socket {
-	username?: string;
+	token?: token;
 }
 
 let connectedClients = 0;
@@ -71,16 +99,21 @@ export async function createServer() {
 	}
 
 	app.io.use((socket: CustomSocket, next) => {
-		const username = socket.handshake.auth.username;
-		if (!username) {
-			return next(new Error("invalid username"));
+		const token = socket.handshake.headers.token as string;
+
+		if (!token) {
+			return next(new Error("NOT AUTHORIZED"));
 		}
-		socket.username = username;
-		console.log(username);
+		try {
+			const decoded = app.jwt.verify(token);
+			socket.token = decoded as token;
+		} catch (err) {
+			return next(new Error("NOT AUTHORIZED"));
+		}
 		next();
 	});
 
-	app.io.on("connection", async (io) => {
+	app.io.on("connection", async (io: CustomSocket) => {
 		app.log.debug("Client connected");
 
 		const incResult = await publisher.incr(CONNECTION_COUNT_KEY);
@@ -91,6 +124,21 @@ export async function createServer() {
 			CONNECTION_COUNT_UPDATED_CHANNEL,
 			String(incResult),
 		);
+
+		io.on("join room", async ({ roomId }) => {
+			console.log({
+				token: io.token,
+				room: roomId,
+			});
+
+			if (!io.token || !roomId) return;
+
+			const prevMessages = await getMessagesByRoomId(roomId);
+
+			console.log({
+				prevMessages,
+			});
+		});
 
 		io.on(NEW_MESSAGE_CHANNEL, async (payload) => {
 			const message = payload.message;
