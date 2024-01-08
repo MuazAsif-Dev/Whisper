@@ -43,35 +43,3 @@ export const getUserByIdJsonSchema = {
 		"getUserByIdApiValidatorSchema",
 	),
 };
-
-const loginUserApiValidatorSchema = selectUserTableSchema.pick({
-	username: true,
-	password: true,
-});
-
-export type loginUserRequestBodyType = z.infer<
-	typeof loginUserApiValidatorSchema
->;
-
-export const loginUserJsonSchema = {
-	body: zodToJsonSchema(
-		loginUserApiValidatorSchema,
-		"loginUserApiValidatorSchema",
-	),
-};
-
-const registerUserApiValidatorSchema = selectUserTableSchema.pick({
-	username: true,
-	password: true,
-});
-
-export type registerUserRequestBodyType = z.infer<
-	typeof registerUserApiValidatorSchema
->;
-
-export const registerUserJsonSchema = {
-	body: zodToJsonSchema(
-		registerUserApiValidatorSchema,
-		"registerUserApiValidatorSchema",
-	),
-};
