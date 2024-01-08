@@ -11,16 +11,36 @@ import { env } from "@/config/env";
 import { loggerConfig } from "@/config/logger";
 import router from "@/modules/v1/routes";
 import { randomUUID } from "crypto";
-import { getMessagesByRoomId } from "./modules/v1/messages/messages.service";
+import {
+	createMessage,
+	getMessagesByRoomId,
+} from "./modules/v1/messages/messages.service";
+import { getUsersByRoomId } from "./modules/v1/roomMembers/roomMembers.service";
+import { createAdapter } from "@socket.io/redis-adapter";
 
 type token = {
 	id: string;
 	username: string;
 };
 
+const CONNECTION_COUNT_KEY = "chat:connection-count";
+const CONNECTION_COUNT_UPDATED_CHANNEL = "chat:connection-count-updated";
+const NEW_MESSAGE_CHANNEL = "chat:new-message";
+const ROOM_JOIN = "chat:join-room";
+const ROOM_NEW_MESSAGE = "chat:room:new-message";
+const CHAT_ROOM_CHANNEL = (roomId: string) => `chat:room:${roomId}` as const;
+const CHAT_ROOM_MESSAGE = (roomId: string) =>
+	`chat:room:${roomId}:messages` as const;
+const CHAT_ROOM_NEW_MESSAGE = (roomId: string) =>
+	`chat:room:${roomId}:new-message` as const;
+
 interface ServerToClientEvents {
 	"chat:connection-count-updated": (payload: any) => Promise<void>;
 	"chat:new-message": (payload: any) => Promise<void>;
+	[key: ReturnType<typeof CHAT_ROOM_NEW_MESSAGE>]: (
+		payload: any,
+	) => Promise<void>;
+	[key: ReturnType<typeof CHAT_ROOM_MESSAGE>]: (payload: any) => Promise<void>;
 }
 // interface ServerToClientEvents {
 //   noArg: () => void;
@@ -57,9 +77,8 @@ interface CustomSocket extends Socket {
 
 let connectedClients = 0;
 
-const CONNECTION_COUNT_KEY = "chat:connection-count";
-const CONNECTION_COUNT_UPDATED_CHANNEL = "chat:connection-count-updated";
-const NEW_MESSAGE_CHANNEL = "chat:new-message";
+const publisher = new Redis(env.UPSTASH_REDIS_URI);
+const subscriber = new Redis(env.UPSTASH_REDIS_URI);
 
 export async function createServer() {
 	const app = Fastify({
@@ -89,14 +108,13 @@ export async function createServer() {
 		};
 	});
 
-	const publisher = new Redis(env.UPSTASH_REDIS_URI);
-	const subscriber = new Redis(env.UPSTASH_REDIS_URI);
-
 	const currCount = await publisher.get(CONNECTION_COUNT_KEY);
 
 	if (!currCount) {
 		await publisher.set(CONNECTION_COUNT_KEY, 0);
 	}
+
+	app.io.adapter(createAdapter(publisher, subscriber));
 
 	app.io.use((socket: CustomSocket, next) => {
 		const token = socket.handshake.headers.token as string;
@@ -125,27 +143,61 @@ export async function createServer() {
 			String(incResult),
 		);
 
-		io.on("join room", async ({ roomId }) => {
-			console.log({
-				token: io.token,
-				room: roomId,
-			});
-
+		io.on(ROOM_JOIN, async ({ roomId }: { roomId: string }) => {
 			if (!io.token || !roomId) return;
+
+			const roomMembers = await getUsersByRoomId(roomId);
+
+			const isCurrentUserRoomMember = roomMembers.find(
+				(roomMember) => roomMember.id === io.token?.id,
+			);
+
+			if (!isCurrentUserRoomMember) return;
+
+			const CHAT_ROOM = CHAT_ROOM_CHANNEL(roomId);
+
+			io.join(CHAT_ROOM);
 
 			const prevMessages = await getMessagesByRoomId(roomId);
 
-			console.log({
-				prevMessages,
+			app.io.to(CHAT_ROOM).emit(CHAT_ROOM_MESSAGE(roomId), {
+				messages: prevMessages,
+			});
+		});
+
+		io.on(ROOM_NEW_MESSAGE, async ({ message, roomId }) => {
+			if (!io.token || !message || !roomId) return;
+
+			const roomMembers = await getUsersByRoomId(roomId);
+			const isCurrentUserRoomMember = roomMembers.find(
+				(roomMember) => roomMember.id === io.token?.id,
+			);
+			if (!isCurrentUserRoomMember) return;
+
+			const newMessage = await createMessage({
+				userId: io.token.id,
+				roomId,
+				content: message,
+			});
+
+			if (!newMessage) return;
+
+			console.log({ newMessage, roomId });
+
+			const CHAT_ROOM = CHAT_ROOM_CHANNEL(roomId);
+
+			app.io.to(CHAT_ROOM).emit(CHAT_ROOM_NEW_MESSAGE(roomId), {
+				message: newMessage,
 			});
 		});
 
 		io.on(NEW_MESSAGE_CHANNEL, async (payload) => {
 			const message = payload.message;
+			const room = payload.roomId;
 
-			app.log.debug(`message from client : ${message}`);
+			app.log.debug(`message from client : ${message}, room: ${room}`);
 
-			if (!message) return;
+			if (!message || !room) return;
 
 			await publisher.publish(NEW_MESSAGE_CHANNEL, message.toString());
 		});
