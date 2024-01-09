@@ -26,7 +26,7 @@ type token = {
 const CONNECTION_COUNT_KEY = "chat:connection-count";
 const CONNECTION_COUNT_UPDATED_CHANNEL = "chat:connection-count-updated";
 const NEW_MESSAGE_CHANNEL = "chat:new-message";
-const ROOM_JOIN = "chat:join-room";
+const ROOM_JOIN = "chat:room:join";
 const ROOM_NEW_MESSAGE = "chat:room:new-message";
 const CHAT_ROOM_CHANNEL = (roomId: string) => `chat:room:${roomId}` as const;
 const CHAT_ROOM_MESSAGE = (roomId: string) =>
