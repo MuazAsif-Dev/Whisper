@@ -9,7 +9,7 @@ export default function useSocket() {
 		const socketIo = io(envClient.SOCKET_URL, {
 			reconnection: true,
 			upgrade: true,
-			// autoConnect: false,
+			autoConnect: false,
 			transports: ["websocket", "polling"],
 		});
 
