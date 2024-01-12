@@ -28,10 +28,10 @@ export default function Page() {
 					<form className="space-y-6" action="#" method="POST">
 						<div>
 							<label
-								htmlFor="email"
+								htmlFor="username"
 								className="block text-sm font-medium leading-6"
 							>
-								Email address
+								Username
 							</label>
 							<div className="mt-2">
 								<Input variant="bordered" />
@@ -39,21 +39,13 @@ export default function Page() {
 						</div>
 
 						<div>
-							<div className="flex items-center justify-between">
+							<div >
 								<label
 									htmlFor="password"
 									className="block text-sm font-medium leading-6 "
 								>
 									Password
 								</label>
-								<div className="text-sm">
-									<Link
-										href="#"
-										className="font-semibold text-indigo-600 hover:text-indigo-500"
-									>
-										Forgot password?
-									</Link>
-								</div>
 							</div>
 							<div className="mt-2">
 								<Input variant="bordered" />
