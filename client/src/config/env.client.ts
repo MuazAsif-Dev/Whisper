@@ -1,13 +1,15 @@
 import { z } from "zod";
 
 const clientEnvSchema = z.object({
-	SOCKET_URL: z.string().url(),
-	API_BASE_URL: z.string().url(),
+	NEXT_PUBLIC_API_SOCKET_URL: z.string().url(),
+	NEXT_PUBLIC_API_BASE_URL: z.string().url(),
+	NEXT_PUBLIC_BACKEND_API_BASE_URL: z.string().url(),
 });
 
 const env = {
-	SOCKET_URL: process.env.NEXT_PUBLIC_SOCKET_URL,
-	API_BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL,
+	NEXT_PUBLIC_API_SOCKET_URL: process.env.NEXT_PUBLIC_SOCKET_URL,
+	NEXT_PUBLIC_API_BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL,
+	NEXT_PUBLIC_BACKEND_API_BASE_URL: process.env.NEXT_PUBLIC_BACKEND_API_BASE_URL
 };
 
 export const envClient = clientEnvSchema.parse(env);

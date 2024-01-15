@@ -1,7 +1,50 @@
-import { Input } from "@nextui-org/react";
-import Link from "next/link";
+"use client"
 
-export default function Page() {
+import { UserLoginSchema } from "@/schemas/login.schema";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Button, Input } from "@nextui-org/react";
+import { signIn } from "next-auth/react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { SubmitHandler, useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { z } from "zod";
+const {AnonymousUserLoginSchema} = UserLoginSchema
+
+export default function Login() {
+	const router = useRouter();
+
+	type UserLoginType = z.infer<typeof AnonymousUserLoginSchema>;
+
+	const {
+		register,
+		handleSubmit,
+		formState: { isSubmitting, errors },
+	} = useForm<UserLoginType>({
+		resolver: zodResolver(AnonymousUserLoginSchema),
+	});
+
+	const onSubmit: SubmitHandler<UserLoginType> = async (data) => {
+		try {
+			const res = await signIn("credentials", {
+				username:data.username,
+				password: data.password,
+				redirect: false,
+			});
+
+			if (res?.error) {
+				toast.error("Failed to login");
+			}
+
+			if (!res?.error) {
+				router.push("/chat");
+				router.refresh();
+			}
+		} catch (error) {
+			console.log(error);
+		}
+	};
+
 	return (
 		<>
 			{/*
@@ -25,7 +68,7 @@ export default function Page() {
 				</div>
 
 				<div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-					<form className="space-y-6" action="#" method="POST">
+					<form onSubmit={handleSubmit(onSubmit)} className="space-y-6" action="#" method="POST">
 						<div>
 							<label
 								htmlFor="username"
@@ -34,7 +77,15 @@ export default function Page() {
 								Username
 							</label>
 							<div className="mt-2">
-								<Input variant="bordered" />
+								<Input variant="bordered" 
+								{...register("username", { required: true })}
+								/>
+						{errors.username && (
+							<span className="text-sm text-red-600">
+								{errors.username.message}
+							</span>
+						)}
+
 							</div>
 						</div>
 
@@ -48,27 +99,36 @@ export default function Page() {
 								</label>
 							</div>
 							<div className="mt-2">
-								<Input variant="bordered" />
+								<Input variant="bordered" 
+								{...register("password", { required: true })}
+								/>
+								{errors.password && (
+							<span className="text-sm text-red-600">
+								{errors.password.message}
+							</span>
+						)}
+
 							</div>
 						</div>
 
 						<div>
-							<button
+							<Button
 								type="submit"
 								className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+								isLoading={isSubmitting}
 							>
-								Sign in
-							</button>
+								Log in
+							</Button>
 						</div>
 					</form>
 
 					<p className="mt-10 text-center text-sm text-gray-500">
-						Not a member?{" "}
+					Don&apos;t have an account?{" "}
 						<Link
-							href="#"
+							href="/register"
 							className="font-semibold leading-6 text-indigo-600 hover:text-indigo-500"
 						>
-							Start a 14 day free trial
+							Sign up
 						</Link>
 					</p>
 				</div>

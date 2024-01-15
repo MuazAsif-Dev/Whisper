@@ -1,11 +1,12 @@
 import { api } from "@/utils/asyncHandler";
+const {serverApi} = api
 
 export async function POST(req: Request) {
-	const { email, password } = await req.json();
+	const { username, password } = await req.json();
 
-	const res = await api
-		.post("/api/register", {
-			json: { email: email, password: password },
+	const res = await serverApi
+		.post("api/v1/auth/register", {
+			json: { username: username, password: password },
 		})
 		.json();
 

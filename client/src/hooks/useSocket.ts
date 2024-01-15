@@ -6,7 +6,7 @@ export default function useSocket() {
 	const [socket, setSocket] = useState<Socket | null>(null);
 
 	useEffect(() => {
-		const socketIo = io(envClient.SOCKET_URL, {
+		const socketIo = io(envClient.NEXT_PUBLIC_API_SOCKET_URL, {
 			reconnection: true,
 			upgrade: true,
 			autoConnect: false,
