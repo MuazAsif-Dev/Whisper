@@ -29,18 +29,22 @@ const NEW_MESSAGE_CHANNEL = "chat:new-message";
 const ROOM_JOIN = "chat:room:join";
 const ROOM_NEW_MESSAGE = "chat:room:new-message";
 const CHAT_ROOM_CHANNEL = (roomId: string) => `chat:room:${roomId}` as const;
-const CHAT_ROOM_MESSAGE = (roomId: string) =>
-	`chat:room:${roomId}:messages` as const;
-const CHAT_ROOM_NEW_MESSAGE = (roomId: string) =>
-	`chat:room:${roomId}:new-message` as const;
+// const CHAT_ROOM_MESSAGE = (roomId: string) =>
+// 	`chat:room:${roomId}:messages` as const;
+const CHAT_ROOM_MESSAGES = "chat:room:messages";
+const CHAT_ROOM_NEW_MESSAGE = "chat:room:new-message";
+// const CHAT_ROOM_NEW_MESSAGE = (roomId: string) =>
+// 	`chat:room:${roomId}:new-message` as const;
 
 interface ServerToClientEvents {
 	"chat:connection-count-updated": (payload: any) => Promise<void>;
 	"chat:new-message": (payload: any) => Promise<void>;
-	[key: ReturnType<typeof CHAT_ROOM_NEW_MESSAGE>]: (
-		payload: any,
-	) => Promise<void>;
-	[key: ReturnType<typeof CHAT_ROOM_MESSAGE>]: (payload: any) => Promise<void>;
+	"chat:room:messages": (payload: any) => Promise<void>;
+	"chat:room:new-message": (payload: any) => Promise<void>;
+	// [key: ReturnType<typeof CHAT_ROOM_NEW_MESSAGE>]: (
+	// 	payload: any,
+	// ) => Promise<void>;
+	// [key: ReturnType<typeof S>]: (payload: any) => Promise<void>;
 }
 // interface ServerToClientEvents {
 //   noArg: () => void;
@@ -117,7 +121,11 @@ export async function createServer() {
 	app.io.adapter(createAdapter(publisher, subscriber));
 
 	app.io.use((socket: CustomSocket, next) => {
-		const token = socket.handshake.headers.token as string;
+		const token =
+			(socket.handshake.auth?.token as string) ||
+			(socket.handshake.headers?.token as string);
+
+		// console.log({token})
 
 		if (!token) {
 			return next(new Error("NOT AUTHORIZED"));
@@ -125,6 +133,8 @@ export async function createServer() {
 		try {
 			const decoded = app.jwt.verify(token);
 			socket.token = decoded as token;
+
+			// console.log({decoded})
 		} catch (err) {
 			return next(new Error("NOT AUTHORIZED"));
 		}
@@ -132,7 +142,7 @@ export async function createServer() {
 	});
 
 	app.io.on("connection", async (io: CustomSocket) => {
-		app.log.debug("Client connected");
+		app.log.debug(`Client connected ${io.id}`);
 
 		const incResult = await publisher.incr(CONNECTION_COUNT_KEY);
 
@@ -144,25 +154,30 @@ export async function createServer() {
 		);
 
 		io.on(ROOM_JOIN, async ({ roomId }: { roomId: string }) => {
-			if (!io.token || !roomId) return;
+			try {
+				if (!io.token || !roomId) return;
 
-			const roomMembers = await getUsersByRoomId(roomId);
+				const roomMembers = await getUsersByRoomId(roomId);
 
-			const isCurrentUserRoomMember = roomMembers.find(
-				(roomMember) => roomMember.id === io.token?.id,
-			);
+				const isCurrentUserRoomMember = roomMembers.find((roomMember) => {
+					return roomMember.id === io.token?.id;
+				});
 
-			if (!isCurrentUserRoomMember) return;
+				if (!isCurrentUserRoomMember) return;
 
-			const CHAT_ROOM = CHAT_ROOM_CHANNEL(roomId);
+				const CHAT_ROOM = CHAT_ROOM_CHANNEL(roomId);
 
-			io.join(CHAT_ROOM);
+				io.join(CHAT_ROOM);
 
-			const prevMessages = await getMessagesByRoomId(roomId);
+				const prevMessages = await getMessagesByRoomId(roomId);
 
-			app.io.to(CHAT_ROOM).emit(CHAT_ROOM_MESSAGE(roomId), {
-				messages: prevMessages,
-			});
+				app.io.to(CHAT_ROOM).emit(CHAT_ROOM_MESSAGES, {
+					room: roomId,
+					messages: prevMessages,
+				});
+			} catch (error) {
+				console.log(error);
+			}
 		});
 
 		io.on(ROOM_NEW_MESSAGE, async ({ message, roomId }) => {
@@ -186,7 +201,8 @@ export async function createServer() {
 
 			const CHAT_ROOM = CHAT_ROOM_CHANNEL(roomId);
 
-			app.io.to(CHAT_ROOM).emit(CHAT_ROOM_NEW_MESSAGE(roomId), {
+			app.io.to(CHAT_ROOM).emit(CHAT_ROOM_NEW_MESSAGE, {
+				room: roomId,
 				message: newMessage,
 			});
 		});

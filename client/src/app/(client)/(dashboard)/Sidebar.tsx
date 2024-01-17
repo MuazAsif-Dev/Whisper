@@ -1,12 +1,13 @@
-"use client"
+"use client";
 
-import useFetch from "@/hooks/useFetch"
+import useFetch from "@/hooks/useFetch";
 import { useQuery } from "@tanstack/react-query";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 
 export default function Sidebar() {
-
-    const {fetchHandler} = useFetch()
+	const session = useSession();
+	const { fetchHandler } = useFetch();
 
 	const {
 		isPending,
@@ -15,13 +16,12 @@ export default function Sidebar() {
 		data: Rooms,
 		error,
 	} = useQuery({
-		queryKey: ["rooms"],
+		queryKey: ["userRooms"],
 		queryFn: () =>
 			fetchHandler({
-				url: `/rooms`,
+				url: `/room-members/user/${session.data?.user.id}`,
 			}),
 	});
-
 
 	if (isPending) {
 		return <div>Loading...</div>;
@@ -31,19 +31,19 @@ export default function Sidebar() {
 		return <span>Error: {error.message}</span>;
 	}
 
-    console.log(Rooms)
+	// console.log(Rooms)
 
+	return (
+		<div>
+			<h1>Sidebar</h1>
 
-  return (
-    <div><h1>Sidebar</h1>
-    
-    <div className="space-y-6">
-        {Rooms?.map((room)=>(
-            <Link href={`/chat/${room.id}`} className="" key={room.id}>
-                {room.title}
-            </Link>
-        ))}
-
-        </div></div>
-  )
+			<div className="space-y-6">
+				{Rooms?.map((room: { id: string; title: string }) => (
+					<Link href={`/chat/${room.id}`} className="" key={room.id}>
+						{room.title}
+					</Link>
+				))}
+			</div>
+		</div>
+	);
 }

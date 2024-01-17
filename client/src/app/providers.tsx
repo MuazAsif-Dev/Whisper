@@ -6,21 +6,21 @@ import { SessionProvider } from "next-auth/react";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
 
 export function Providers({
-  children,
-  session,
+	children,
+	session,
 }: {
-  children: React.ReactNode;
-  session: any;
+	children: React.ReactNode;
+	session: any;
 }) {
-  const queryClient = new QueryClient();
+	const queryClient = new QueryClient();
 
-  return (
-    <NextUIProvider>
-      <NextThemesProvider attribute="class" disableTransitionOnChange>
-      <QueryClientProvider client={queryClient}>
-        <SessionProvider session={session}>{children}</SessionProvider>
-      </QueryClientProvider>
-      </NextThemesProvider>
-    </NextUIProvider>
-  );
+	return (
+		<NextUIProvider>
+			<NextThemesProvider attribute="class" disableTransitionOnChange>
+				<QueryClientProvider client={queryClient}>
+					<SessionProvider session={session}>{children}</SessionProvider>
+				</QueryClientProvider>
+			</NextThemesProvider>
+		</NextUIProvider>
+	);
 }
