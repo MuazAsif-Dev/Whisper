@@ -9,7 +9,7 @@ export const messages = pgTable("messages", {
 		.references(() => users.id)
 		.notNull(),
 	roomId: uuid("room_id")
-		.references(() => rooms.id)
+		.references(() => rooms.id, { onDelete: "cascade" })
 		.notNull(),
 	content: text("content").notNull(),
 	createdAt: timestamp("created_at").notNull().defaultNow(),
