@@ -9,10 +9,16 @@ const createRoomTableSchema = createInsertSchema(rooms, {
 	title: (schema) => schema.title.min(3),
 });
 
-const createRoomApiValidatorSchema = createRoomTableSchema.pick({
-	title: true,
-	createdByUserId: true,
-});
+const createRoomApiValidatorSchema = createRoomTableSchema
+	.pick({
+		title: true,
+		createdByUserId: true,
+	})
+	.extend({
+		roomMembers: z
+			.array(z.string().uuid())
+			.min(2, "Room must have at least 2 members"),
+	});
 
 export type createRoomRequestBodyType = z.infer<
 	typeof createRoomApiValidatorSchema

@@ -3,9 +3,11 @@ import {
 	createRoomRequestBodyType,
 	getRoomByIdRequestParamsType,
 } from "./rooms.schema";
-import { createRoom, getRoomById, getRooms } from "./rooms.service";
-import { getUserById } from "../users/users.service";
-import { createRoomMember } from "../roomMembers/roomMembers.service";
+import {
+	createRoomWithRoomMembers,
+	getRoomById,
+	getRooms,
+} from "./rooms.service";
 
 export async function createRoomHandler(
 	req: FastifyRequest<{ Body: createRoomRequestBodyType }>,
@@ -13,21 +15,11 @@ export async function createRoomHandler(
 ) {
 	const roomData = req.body;
 
-	const room = await createRoom(roomData);
+	const room = await createRoomWithRoomMembers(roomData);
 
 	if (!room) {
 		res.code(404);
 		return { message: "Room creation unsuccessful" };
-	}
-
-	const roomMember = await createRoomMember({
-		roomId: room.id,
-		userId: room.createdByUserId,
-	});
-
-	if (!roomMember) {
-		res.code(404);
-		return { message: "Initial Room Member creation unsuccessful" };
 	}
 
 	return room;
