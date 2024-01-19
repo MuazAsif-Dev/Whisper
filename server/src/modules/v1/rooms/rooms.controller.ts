@@ -13,13 +13,6 @@ export async function createRoomHandler(
 ) {
 	const roomData = req.body;
 
-	const user = await getUserById(roomData.createdByUserId);
-
-	if (!user) {
-		res.code(404);
-		return { message: "Invalid User Id" };
-	}
-
 	const room = await createRoom(roomData);
 
 	if (!room) {
@@ -29,7 +22,7 @@ export async function createRoomHandler(
 
 	const roomMember = await createRoomMember({
 		roomId: room.id,
-		userId: user.id,
+		userId: room.createdByUserId,
 	});
 
 	if (!roomMember) {
