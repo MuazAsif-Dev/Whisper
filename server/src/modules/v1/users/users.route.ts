@@ -3,12 +3,23 @@ import type { FastifyInstance } from "fastify";
 import {
 	createUserHandler,
 	getUserByIdHandler,
+	getUsersByRoleHandler,
 	getUsersHandler,
 } from "./users.controller";
-import { createUserJsonSchema, getUserByIdJsonSchema } from "./users.schema";
+import {
+	createUserJsonSchema,
+	getUserByIdJsonSchema,
+	getUsersByRoleJsonSchema,
+} from "./users.schema";
 
 export default async function userRouter(router: FastifyInstance) {
 	router.get("/", getUsersHandler);
+
+	router.get(
+		"/:role",
+		{ schema: getUsersByRoleJsonSchema },
+		getUsersByRoleHandler,
+	);
 
 	router.get("/:id", { schema: getUserByIdJsonSchema }, getUserByIdHandler);
 

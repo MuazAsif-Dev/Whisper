@@ -3,8 +3,14 @@ import { FastifyReply, FastifyRequest } from "fastify";
 import {
 	createUserRequestBodyType,
 	getUserByIdRequestParamsType,
+	getUsersByRoleRequestParamsType,
 } from "./users.schema";
-import { createUser, getUserById, getUsers } from "./users.service";
+import {
+	createUser,
+	getUserById,
+	getUsers,
+	getUsersByRole,
+} from "./users.service";
 
 export async function createUserHandler(
 	req: FastifyRequest<{ Body: createUserRequestBodyType }>,
@@ -24,6 +30,26 @@ export async function createUserHandler(
 
 export async function getUsersHandler() {
 	const users = await getUsers();
+
+	return users;
+}
+
+export async function getUsersByRoleHandler(
+	req: FastifyRequest<{
+		Params: getUsersByRoleRequestParamsType;
+	}>,
+	res: FastifyReply,
+) {
+	const { role } = req.params;
+
+	const users = await getUsersByRole(role);
+
+	if (!users) {
+		res.code(404);
+		return {
+			message: "No users found with the provided Role",
+		};
+	}
 
 	return users;
 }

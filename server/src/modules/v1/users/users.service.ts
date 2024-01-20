@@ -1,5 +1,10 @@
 import * as argon2 from "argon2";
-import { InferInsertModel, eq, getTableColumns } from "drizzle-orm";
+import {
+	InferInsertModel,
+	InferSelectModel,
+	eq,
+	getTableColumns,
+} from "drizzle-orm";
 
 import { db } from "@/db/dbConnection";
 import { users } from "@/db/models/users.model";
@@ -30,6 +35,23 @@ export async function getUsers() {
 			...rest,
 		})
 		.from(users);
+
+	return result;
+}
+
+type x = keyof typeof users.role;
+
+export async function getUsersByRole(
+	role: InferSelectModel<typeof users>["role"],
+) {
+	const { password, ...rest } = getTableColumns(users);
+
+	const result = await db
+		.select({
+			...rest,
+		})
+		.from(users)
+		.where(eq(users.role, role));
 
 	return result;
 }

@@ -43,3 +43,18 @@ export const getUserByIdJsonSchema = {
 		"getUserByIdApiValidatorSchema",
 	),
 };
+
+const getUsersByRoleApiValidatorSchema = selectUserTableSchema.pick({
+	role: true,
+});
+
+export type getUsersByRoleRequestParamsType = z.infer<
+	typeof getUsersByRoleApiValidatorSchema
+>;
+
+export const getUsersByRoleJsonSchema = {
+	params: zodToJsonSchema(
+		getUsersByRoleApiValidatorSchema,
+		"getUsersByRoleApiValidatorSchema",
+	),
+};

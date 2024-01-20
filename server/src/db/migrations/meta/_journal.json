@@ -50,6 +50,13 @@
 			"when": 1705675610074,
 			"tag": "0006_steep_the_hand",
 			"breakpoints": false
+		},
+		{
+			"idx": 7,
+			"version": "5",
+			"when": 1705764811435,
+			"tag": "0007_greedy_salo",
+			"breakpoints": false
 		}
 	]
 }

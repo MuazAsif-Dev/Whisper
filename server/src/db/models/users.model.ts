@@ -11,7 +11,9 @@ export const users = pgTable("users", {
 	username: varchar("username", { length: 256 }).unique().notNull(),
 	password: varchar("password", { length: 256 }).notNull(),
 	email: varchar("email", { length: 256 }).unique(),
-	isManagement: boolean("is_management").notNull().default(false),
+	role: varchar("role", { length: 256, enum: ["admin", "management", "user"] })
+		.notNull()
+		.default("user"),
 	isDeleted: boolean("is_deleted").notNull().default(false),
 	createdAt: timestamp("created_at").defaultNow().notNull(),
 	updatedAt: timestamp("updated_at").defaultNow().notNull(),
