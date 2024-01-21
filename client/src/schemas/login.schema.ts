@@ -9,19 +9,18 @@ const AnonymousUserLoginSchema = z.object({
 
 const AnonymousUserLoginApiSchema = z.object({
 	user: z.object({
-        id: z.string().uuid(),
-        username: z.string(),
-        email: z.string().email().nullable(),
-        isManagement: z.boolean(),
-        isDeleted: z.boolean(),
-        createdAt: z.string(),
-        updatedAt: z.string()
-    }),
-    token: z.string()
+		id: z.string().uuid(),
+		username: z.string(),
+		email: z.string().email().nullable(),
+		role: z.string(),
+		isDeleted: z.boolean(),
+		createdAt: z.string(),
+		updatedAt: z.string(),
+	}),
+	token: z.string(),
 });
-
 
 export const UserLoginSchema = {
 	AnonymousUserLoginSchema,
-	AnonymousUserLoginApiSchema
-}
+	AnonymousUserLoginApiSchema,
+};

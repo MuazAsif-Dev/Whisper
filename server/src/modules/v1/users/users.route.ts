@@ -16,7 +16,7 @@ export default async function userRouter(router: FastifyInstance) {
 	router.get("/", getUsersHandler);
 
 	router.get(
-		"/:role",
+		"/role/:role",
 		{ schema: getUsersByRoleJsonSchema },
 		getUsersByRoleHandler,
 	);

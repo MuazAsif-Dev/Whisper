@@ -1,5 +1,5 @@
 import { users } from "@/db/models/users.model";
-import { createSelectSchema } from "drizzle-zod";
+import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import z from "zod";
 import zodToJsonSchema from "zod-to-json-schema";
 
@@ -21,7 +21,12 @@ export const loginUserJsonSchema = {
 	),
 };
 
-const registerUserApiValidatorSchema = selectUserTableSchema.pick({
+const createUserTableSchema = createInsertSchema(users, {
+	username: (schema) => schema.username.min(3),
+	password: (schema) => schema.password.min(6),
+});
+
+const registerUserApiValidatorSchema = createUserTableSchema.pick({
 	username: true,
 	password: true,
 });

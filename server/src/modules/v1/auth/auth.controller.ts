@@ -80,5 +80,5 @@ export async function registerHandler(
 		},
 	);
 
-	return { newUser, token };
+	return { user: newUser, token };
 }
