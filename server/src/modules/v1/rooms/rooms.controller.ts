@@ -13,7 +13,12 @@ export async function createRoomHandler(
 	req: FastifyRequest<{ Body: createRoomRequestBodyType }>,
 	res: FastifyReply,
 ) {
-	const roomData = req.body;
+	const roomReqData = req.body;
+
+	const roomData = {
+		...roomReqData,
+		createdByUserId: req.user.id,
+	};
 
 	const room = await createRoomWithRoomMembers(roomData);
 

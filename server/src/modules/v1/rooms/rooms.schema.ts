@@ -12,7 +12,6 @@ const createRoomTableSchema = createInsertSchema(rooms, {
 const createRoomApiValidatorSchema = createRoomTableSchema
 	.pick({
 		title: true,
-		createdByUserId: true,
 	})
 	.extend({
 		roomMembers: z
